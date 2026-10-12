@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mind Matters — Worry Woods</title><style>body{background:#171c48;color:white;font:18px system-ui;text-align:center;margin:0}h1{margin:12px;color:#ffd2ff}#game{width:min(94vw,800px);aspect-ratio:4/3;border:5px solid #ef9cff;border-radius:15px;display:block;margin:auto;background:#203e65}#pad{display:grid;grid-template-columns:repeat(3,65px);gap:8px;justify-content:center;margin:14px}button{padding:12px;border:2px solid #fff;border-radius:12px;background:#7250a4;color:white;font:700 17px system-ui;cursor:pointer}button:focus{background:#c43eab}#pad button{touch-action:none}#message{min-height:120px;max-width:780px;margin:8px auto;padding:12px;background:#2b315a;border-radius:15px}small{color:#c9d5fa}</style><h1>🧠 Mind Matters: The Mood Maze</h1><small>Worry Woods · A Health Arcade for Kids from TAN Healthcare</small><div id="message"></div><canvas id="game" width="800" height="600"></canvas><div id="pad"><span></span><button data-d="up">▲</button><span></span><button data-d="left">◀</button><button data-d="down">▼</button><button data-d="right">▶</button></div><small>Arrow keys: move and navigate challenges · Touchscreen: use the arrows · No accounts or personal data</small><script>
+const c=document.querySelector('canvas'),g=c.getContext('2d'),msg=document.querySelector('#message');
+const maps=["####################","#S...#.............#","#.#..#.####.#####..#","#.#.......#........#","#.#####.#.#.#####..#","#.....#.#...#......#","#####.#.#####.###..#","#.....#.......#....#","#.########.##.#.##.#","#........#.....#...#","#.#####..###.###...#","#.....#.......#....#","#.###.###.#####.####","#.................E#","####################"];
+const map=maps.map(r=>r.split('')),foods=[{x:3,y:1,name:'Calm Breeze',info:'Slow breathing may help your body settle when you feel worried.'},{x:9,y:3,name:'Small Steps',info:'Breaking a challenge into smaller steps can make it easier to start.'},{x:5,y:11,name:'Talk It Out',info:'A trusted person can help you think through a worry.'}];
+let hero=0,px=1,py=1,held={},mode='hero',selected=0,got=new Set(),wallDone=false,menu=[],lastMove=0;
+const heroes=[['Ari','👧🏿'],['Mia','👧🏼'],['Jay','👦🏿'],['Leo','👦🏼']];
+function panel(s){msg.innerHTML=s}
+function selectHero(){mode='hero';panel('<h2>Choose Your Hero</h2><p>'+heroes.map((h,i)=>(selected===i?'👉 ':'')+h[1]+' '+h[0]).join(' &nbsp; ')+'</p><p>← → choose your hero · ↑ start</p>')}
+function intro(){mode='play';panel('<b>Welcome to Worry Woods!</b><p>Explore with arrow keys. Collect three coping tools, then find the exit. Every feeling is allowed!</p>')}
+function challenge(){mode='choice';selected=0;drawChoices()}
+function drawChoices(){let items=['Avoid the presentation forever','Practice one small part','Imagine everything going wrong'];panel('<h2>The Worry Wall</h2><p>Your character is worried about a school presentation. What could help?</p>'+items.map((v,i)=>'<p>'+(i===selected?'👉 ':'')+v+'</p>').join('')+'<p>↑ ↓ choose · → confirm</p>')}
+function answer(){if(selected===1){wallDone=true;mode='play';panel('<h3>🌟 A new path opens!</h3><p>Practicing a little at a time may help a big worry feel more manageable. Keep exploring!</p>')}else{panel('<h3>Try another path</h3><p>'+(selected===0?'Avoiding a worry may bring temporary relief, but the problem may remain.':'Imagining the worst can make a worry feel bigger.')+' Try a small action you can take.</p>');mode='retry'}}
+function win(){mode='won';panel('<h2>🏆 Worry Woods Complete!</h2><p>You collected '+got.size+' coping tools. Feelings come and go. You can practice different ways to respond.</p><p>↑ play again</p>')}
+function action(d){if(mode==='hero'){if(d==='left'||d==='right')selected=(selected+(d==='right'?1:3))%4;else if(d==='up')intro();else return;selectHeroIfNeeded();return}
+if(mode==='choice'){if(d==='up'||d==='down')selected=(selected+(d==='down'?1:2))%3;else if(d==='right')answer();drawChoicesIfNeeded();return}
+if(mode==='retry'){mode='choice';if(d==='up'||d==='down')selected=(selected+(d==='down'?1:2))%3;drawChoices();return}
+if(mode==='won'){if(d==='up'){px=1;py=1;got.clear();wallDone=false;intro()}return}
+if(mode!=='play')return;let x=px+(d==='right'?1:d==='left'?-1:0),y=py+(d==='down'?1:d==='up'?-1:0);
+if(map[y]?.[x]==='#'||!map[y]?.[x])return;px=x;py=y;
+for(let i=0;i<foods.length;i++)if(x===foods[i].x&&y===foods[i].y&&!got.has(i)){got.add(i);mode='info';panel('<h2>✨ '+foods[i].name+'</h2><p>'+foods[i].info+'</p><p>Press any arrow to continue.</p>')}
+if(map[y][x]==='E'){if(got.size===3)challenge();else panel('<p>Find all three coping tools before leaving Worry Woods. '+got.size+'/3 collected.</p>')}
+}
+function selectHeroIfNeeded(){if(mode==='hero')selectHero()}
+function drawChoicesIfNeeded(){if(mode==='choice')drawChoices()}
+function input(d){if(mode==='info'){mode='play';panel('<p>Keep exploring! Tools: '+got.size+'/3</p>');return}action(d)}
+document.addEventListener('keydown',e=>{let d={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'}[e.key];if(d){e.preventDefault();if(!e.repeat)input(d)}});
+document.querySelectorAll('[data-d]').forEach(b=>{b.addEventListener('pointerdown',e=>{e.preventDefault();input(b.dataset.d)})});
+function render(){const tile=40;g.fillStyle='#18264e';g.fillRect(0,0,800,600);
+for(let y=0;y<15;y++)for(let x=0;x<20;x++){g.fillStyle=map[y][x]==='#'?'#1d624d':'#94c883';g.fillRect(x*tile,y*tile,tile-2,tile-2);if(map[y][x]==='#'){g.fillStyle='#337e65';g.fillRect(x*tile+4,y*tile+2,30,6)}}
+g.font='27px system-ui';for(let i=0;i<foods.length;i++)if(!got.has(i))g.fillText(['🌬️','👣','💬'][i],foods[i].x*40+3,foods[i].y*40+31);
+g.fillText('🚪',17*40+3,13*40+31);g.font='33px system-ui';g.fillText(heroes[hero][1],px*40+1,py*40+33);g.font='bold 15px system-ui';g.fillStyle='white';g.fillText('Tools '+got.size+'/3',12,590);requestAnimationFrame(render)}
+selectHero();render();
+</script></html>
