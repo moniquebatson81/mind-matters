@@ -9,16 +9,16 @@ function selectHero(){mode='hero';panel('<h2>Choose Your Hero</h2><p>'+heroes.ma
 function intro(){mode='play';panel('<b>Welcome to Worry Woods!</b><p>Explore with arrow keys. Collect three coping tools, then find the exit. Every feeling is allowed!</p>')}
 function challenge(){mode='choice';selected=0;drawChoices()}
 function drawChoices(){let items=['Avoid the presentation forever','Practice one small part','Imagine everything going wrong'];panel('<h2>The Worry Wall</h2><p>Your character is worried about a school presentation. What could help?</p>'+items.map((v,i)=>'<p>'+(i===selected?'👉 ':'')+v+'</p>').join('')+'<p>↑ ↓ choose · → confirm</p>')}
-function answer(){if(selected===1){wallDone=true;mode='play';panel('<h3>🌟 A new path opens!</h3><p>Practicing a little at a time may help a big worry feel more manageable. Keep exploring!</p>')}else{panel('<h3>Try another path</h3><p>'+(selected===0?'Avoiding a worry may bring temporary relief, but the problem may remain.':'Imagining the worst can make a worry feel bigger.')+' Try a small action you can take.</p>');mode='retry'}}
+function answer(){if(selected===1){wallDone=true;map[12][18]='.';map[12][17]='.';mode='play';panel('<h3>🌟 The golden passage opens!</h3><p>Look directly ABOVE the exit door: the stone wall has changed into a glowing path. Press ↑ to enter it and finish the level. Practicing a little at a time can make a big worry feel more manageable.</p>')}else{panel('<h3>Try another path</h3><p>'+(selected===0?'Avoiding a worry may bring temporary relief, but the problem may remain.':'Imagining the worst can make a worry feel bigger.')+' Try a small action you can take.</p>');mode='retry'}}
 function win(){mode='won';panel('<h2>🏆 Worry Woods Complete!</h2><p>You collected '+got.size+' coping tools. Feelings come and go. You can practice different ways to respond.</p><p>↑ play again</p>')}
 function action(d){if(mode==='hero'){if(d==='left'||d==='right')selected=(selected+(d==='right'?1:3))%4;else if(d==='up'){hero=selected;intro();return}else return;selectHeroIfNeeded();return}
 if(mode==='choice'){if(d==='up'||d==='down')selected=(selected+(d==='down'?1:2))%3;else if(d==='right')answer();drawChoicesIfNeeded();return}
 if(mode==='retry'){mode='choice';if(d==='up'||d==='down')selected=(selected+(d==='down'?1:2))%3;drawChoices();return}
-if(mode==='won'){if(d==='up'){px=1;py=1;got.clear();wallDone=false;intro()}return}
+if(mode==='won'){if(d==='up'){px=1;py=1;got.clear();wallDone=false;map[12][18]='#';map[12][17]='#';intro()}return}
 if(mode!=='play')return;let x=px+(d==='right'?1:d==='left'?-1:0),y=py+(d==='down'?1:d==='up'?-1:0);
 if(map[y]?.[x]==='#'||!map[y]?.[x])return;px=x;py=y;
 for(let i=0;i<foods.length;i++)if(x===foods[i].x&&y===foods[i].y&&!got.has(i)){got.add(i);mode='info';panel('<h2>✨ '+foods[i].name+'</h2><p>'+foods[i].info+'</p><p>Press any arrow to continue.</p>')}
-if(map[y][x]==='E'){if(got.size===3)challenge();else panel('<p>Find all three coping tools before leaving Worry Woods. '+got.size+'/3 collected.</p>')}
+if(wallDone&&x===18&&y===12){win();return}if(map[y][x]==='E'){if(wallDone){panel('<p>The golden passage is open! Press ↑ to enter it.</p>')}else if(got.size===3)challenge();else panel('<p>Find all three coping tools before leaving Worry Woods. '+got.size+'/3 collected.</p>')}
 }
 function selectHeroIfNeeded(){if(mode==='hero')selectHero()}
 function drawChoicesIfNeeded(){if(mode==='choice')drawChoices()}
@@ -28,6 +28,6 @@ document.querySelectorAll('[data-d]').forEach(b=>{b.addEventListener('pointerdow
 function render(){const tile=40;g.fillStyle='#18264e';g.fillRect(0,0,800,600);
 for(let y=0;y<15;y++)for(let x=0;x<20;x++){g.fillStyle=map[y][x]==='#'?'#1d624d':'#94c883';g.fillRect(x*tile,y*tile,tile-2,tile-2);if(map[y][x]==='#'){g.fillStyle='#337e65';g.fillRect(x*tile+4,y*tile+2,30,6)}}
 g.font='27px system-ui';for(let i=0;i<foods.length;i++)if(!got.has(i))g.fillText(['🌬️','👣','💬'][i],foods[i].x*40+3,foods[i].y*40+31);
-g.fillText('🚪',18*40+3,13*40+31);g.font='33px system-ui';g.fillText(heroes[hero][1],px*40+1,py*40+33);g.font='bold 15px system-ui';g.fillStyle='white';g.fillText('Tools '+got.size+'/3',12,590);requestAnimationFrame(render)}
+g.fillText('🚪',18*40+3,13*40+31);if(wallDone){g.fillStyle='#fef08a';g.fillRect(18*40+3,12*40+3,34,34);g.font='28px system-ui';g.fillText('✨',18*40+3,12*40+29)}g.font='33px system-ui';g.fillText(heroes[hero][1],px*40+1,py*40+33);g.font='bold 15px system-ui';g.fillStyle='white';g.fillText('Tools '+got.size+'/3',12,590);requestAnimationFrame(render)}
 selectHero();render();
 </script></html>
