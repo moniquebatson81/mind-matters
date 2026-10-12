@@ -25,6 +25,8 @@ canvas{display:block;width:100%;height:auto}
 #panel .eyebrow{color:#735c9e;font-size:11px;letter-spacing:.12em;font-weight:900;text-transform:uppercase}
 button{font:inherit;cursor:pointer;font-weight:850;color:#322650;background:linear-gradient(#fef3c9,#eacb8e);border:2px solid #a98256;border-radius:12px;padding:10px 14px}
 button:focus-visible,button:hover{outline:3px solid #74d6b5;outline-offset:2px}
+#panel button.keyboard-selected{outline:3px solid #247f88;outline-offset:2px;box-shadow:0 0 0 5px #befbed88;background:#e0fff1;color:#24304a}
+.menu-hint{font-size:12px!important;color:#565177;line-height:1.4;margin:11px 0 0!important}
 button:disabled{opacity:.45;cursor:not-allowed}
 button.primary{background:linear-gradient(135deg,#8551bb,#4e399b);color:#fff;border:2px solid #cdb4ff}
 button.secondary{background:#ece8f7;color:#493870;border-color:#a8a0c6}
@@ -151,15 +153,16 @@ document.getElementById('meter').setAttribute('aria-valuenow',String(heart));
 function changeHeart(d){heart=Math.min(100,Math.max(25,heart+d));hud()}
 function setPanel(html,nextMode){
 mode=nextMode;paused=true;clearKeys();overlay.hidden=false;panel.innerHTML=html;
+panel.insertAdjacentHTML('beforeend','<p class="menu-hint">⌨️ In menus: <b>↑ / ↓</b> highlight a choice · <b>→</b> select it (or press Enter). On phones, tap a choice.</p>');
 menuItems=Array.from(panel.querySelectorAll('button:not(:disabled)'));menuIndex=0;
-if(menuItems.length){menuItems[0].focus({preventScroll:true})}
+highlightMenuItem(0)
 }
 function resume(){overlay.hidden=true;mode='play';paused=false;clearKeys()}
 function chooseHero(){
 let s='<div class="eyebrow">Your adventure begins</div><h2>🧠 Mind Matters: The Six Realms</h2><p class="lead">Explore six magical worlds. Practice coping skills, help the landscape change, and find the Wizard of the Woods whenever you need support.</p><h3>Choose your hero</h3><div class="hero-grid">';
 HEROES.forEach((h,i)=>{s+='<button data-action="hero" data-i="'+i+'" class="'+(hero===i?'selected':'')+'"><span class="avatar">'+h.emoji+'</span>'+h.n+'</button>'});
 s+='</div><div class="row-buttons"><button class="primary" data-action="map">🗺️ Choose a World</button></div>';
-setPanel(s,'hero');const start=panel.querySelector('[data-action="map"]');if(start){menuIndex=menuItems.indexOf(start);start.focus({preventScroll:true})}
+setPanel(s,'hero');const start=panel.querySelector('[data-action="map"]');if(start)highlightMenuItem(menuItems.indexOf(start))
 }
 function worldMap(){
 let s='<div class="eyebrow">Choose anywhere to playtest</div><h2>🗺️ Map of the Six Realms</h2><p>All six worlds are unlocked. Pick one, or play them in order.</p><div class="world-grid">';
@@ -347,15 +350,24 @@ else if(act==='refill')wizardRefill();
 else if(act==='nextworld')loadWorld(Math.min(WORLDS.length-1,world+1));
 else if(act==='replay')loadWorld(0);
 });
+function highlightMenuItem(index){
+menuItems=Array.from(panel.querySelectorAll('button:not(:disabled)'));
+if(!menuItems.length)return;
+menuIndex=((index%menuItems.length)+menuItems.length)%menuItems.length;
+menuItems.forEach((button,i)=>button.classList.toggle('keyboard-selected',i===menuIndex));
+menuItems[menuIndex].focus({preventScroll:true});
+}
 function menuControl(key){
 menuItems=Array.from(panel.querySelectorAll('button:not(:disabled)'));
 if(!menuItems.length)return;
-if(key==='ArrowLeft'||key==='ArrowDown'||key==='ArrowRight'){
-menuIndex=(menuIndex+(key==='ArrowLeft'?menuItems.length-1:1))%menuItems.length;
-menuItems[menuIndex].focus({preventScroll:true});return}
-if(key==='ArrowUp'||key==='Enter'||key===' '){
-if(document.activeElement&&menuItems.includes(document.activeElement))document.activeElement.click();
-else menuItems[Math.max(0,menuIndex)].click();
+const focusedIndex=menuItems.indexOf(document.activeElement);
+if(focusedIndex>=0)menuIndex=focusedIndex;
+if(['ArrowUp','ArrowDown','ArrowLeft'].includes(key)){
+highlightMenuItem(menuIndex+(key==='ArrowDown'?1:-1));return;
+}
+if(['ArrowRight','Enter',' '].includes(key)){
+const button=menuItems[menuIndex];
+if(button)button.click();return;
 }
 }
 document.addEventListener('keydown',e=>{
