@@ -58,7 +58,7 @@ button.secondary{background:#ece8f7;color:#493870;border-color:#a8a0c6}
 #toolbar #help{background:#d6fff0;border-color:#5eaf94}
 #hint{text-align:center;color:#d5d0ed;font-size:12px;line-height:1.5;padding:6px}
 footer{text-align:center;color:#aeb5d7;font-size:12px;padding:8px 15px 25px}
-@media(max-width:540px){#frame{border-width:3px}#panel{border-width:3px}.hero-grid{grid-template-columns:repeat(2,1fr)}.world-grid{grid-template-columns:1fr}.world-grid button{min-height:62px}.activity-grid{grid-template-columns:repeat(2,1fr)}#touchbar button{height:49px}#panel p{font-size:14px}#meterbox{font-size:11px}}
+@media(max-width:540px){#overlay{position:fixed;inset:0;z-index:100;padding:12px}#panel{max-height:94dvh}#frame{border-width:3px}#panel{border-width:3px}.hero-grid{grid-template-columns:repeat(2,1fr)}.world-grid{grid-template-columns:1fr}.world-grid button{min-height:62px}.activity-grid{grid-template-columns:repeat(2,1fr)}#touchbar button{height:49px}#panel p{font-size:14px}#meterbox{font-size:11px}}
 @media(prefers-reduced-motion:reduce){.breath-orb,.portal{animation:none}.breath-orb{transform:scale(.95)}}
 </style>
 </head>
@@ -130,7 +130,7 @@ quests:[
 ];
 const HEROES=[{n:'Ari',emoji:'👧🏿',skin:'#70432b',hair:'#25151f',shirt:'#fd96b0',style:0},{n:'Mia',emoji:'👧🏼',skin:'#efc19f',hair:'#6f3e35',shirt:'#ac9cf9',style:1},{n:'Jay',emoji:'👦🏿',skin:'#70432b',hair:'#231620',shirt:'#5ce0c6',style:2},{n:'Leo',emoji:'👦🏼',skin:'#efc19f',hair:'#5a3426',shirt:'#7cb9ff',style:2}];
 const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),panel=document.getElementById('panel');
-const W=960,H=520,FLOOR=423,WORLD=4300,buttonKeys={ArrowLeft:false,ArrowRight:false,ArrowUp:false,ArrowDown:false};
+let W=960;const H=520,FLOOR=423,WORLD=4300,buttonKeys={ArrowLeft:false,ArrowRight:false,ArrowUp:false,ArrowDown:false};
 const GATE_X7=[460,910,1360,1970,2440,2890,3440],GATE_X5=[540,1180,1890,2700,3440],WIZARDS=[1620,3180];
 let hero=0,world=0,levelStarted=false,mode='hero',paused=true,cam=0,player={x:70,y:FLOOR-54,w:31,h:54,vy:0,ground:true,duck:false};
 let heart=100,completed=[],collected=new Set(),frame=0,challengeIndex=0,activityChecks=new Set(),activityStep=0,animationLatch=false,hurtCooldown=0,obstacles=[],platforms=[],activeWorld=-1;
@@ -159,7 +159,7 @@ function chooseHero(){
 let s='<div class="eyebrow">Your adventure begins</div><h2>🧠 Mind Matters: The Six Realms</h2><p class="lead">Explore six magical worlds. Practice coping skills, help the landscape change, and find the Wizard of the Woods whenever you need support.</p><h3>Choose your hero</h3><div class="hero-grid">';
 HEROES.forEach((h,i)=>{s+='<button data-action="hero" data-i="'+i+'" class="'+(hero===i?'selected':'')+'"><span class="avatar">'+h.emoji+'</span>'+h.n+'</button>'});
 s+='</div><div class="row-buttons"><button class="primary" data-action="map">🗺️ Choose a World</button></div>';
-setPanel(s,'hero')
+setPanel(s,'hero');const start=panel.querySelector('[data-action="map"]');if(start){menuIndex=menuItems.indexOf(start);start.focus({preventScroll:true})}
 }
 function worldMap(){
 let s='<div class="eyebrow">Choose anywhere to playtest</div><h2>🗺️ Map of the Six Realms</h2><p>All six worlds are unlocked. Pick one, or play them in order.</p><div class="world-grid">';
@@ -384,5 +384,7 @@ if(mode==='play'){paused=!paused;document.getElementById('pause').textContent=pa
 };
 document.getElementById('retry').onclick=()=>loadWorld(world);
 document.getElementById('talk').disabled=true;
+function fitCanvas(){W=window.innerWidth<600?650:960;canvas.width=W}
+window.addEventListener('resize',fitCanvas);fitCanvas();
 hud();chooseHero();requestAnimationFrame(loop);
 </script></body></html>
