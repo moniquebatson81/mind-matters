@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mind Matters: The Six Realms — Mission Well Games</title>
+<style>
+:root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0c1128;color:#f9f6ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% 0,#34306d 0,#101833 52%,#090d20 100%);overflow-x:hidden}
+header{text-align:center;padding:14px 10px 7px}header .eyebrow{font-size:11px;font-weight:900;letter-spacing:.18em;color:#c7c5ff}h1{font-size:clamp(25px,5vw,40px);margin:3px 0;color:#fff0c1;text-shadow:0 2px 16px #866cbd}header p{color:#d9d6f5;margin:3px 0;font-size:clamp(12px,2.2vw,15px)}
+main{width:min(1060px,100%);margin:0 auto;padding:8px}
+#worldinfo{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 2px;color:#efe9ff;flex-wrap:wrap}
+#worldinfo strong{font-size:clamp(13px,2.1vw,18px)}#worldinfo small{color:#d3cbe8}
+#meterbox{display:flex;align-items:center;gap:9px;font-size:12px;font-weight:800}
+#meter{width:clamp(104px,25vw,200px);height:16px;border:2px solid #c1bbfc;background:#22253e;border-radius:99px;overflow:hidden;box-shadow:0 0 11px #a786ce55}
+#meterfill{height:100%;width:100%;background:linear-gradient(90deg,#4fc2a9,#d1ef83);transition:width .2s}
+#frame{position:relative;border:4px solid #bfa2f2;border-radius:18px;overflow:hidden;box-shadow:0 17px 55px #08051b99,0 0 45px #8e69ee29;background:#24234f}
+canvas{display:block;width:100%;height:auto}
+#hud{position:absolute;top:9px;left:12px;right:12px;display:flex;justify-content:space-between;gap:8px;font-weight:900;font-size:clamp(11px,1.8vw,16px);text-shadow:0 2px 5px #121031;pointer-events:none}
+#hud span{background:#1a1b3d9c;padding:4px 8px;border-radius:10px}
+#overlay{position:absolute;inset:0;display:grid;place-items:center;background:#070e2cd9;backdrop-filter:blur(4px);padding:clamp(8px,2vw,22px);z-index:4}
+#overlay[hidden]{display:none}
+#panel{background:linear-gradient(160deg,#fffdfd,#f2eaff);border:4px solid #d5b8f2;border-radius:23px;box-shadow:0 20px 55px #090c31b8;color:#28234a;width:min(710px,100%);max-height:100%;overflow:auto;padding:clamp(12px,3vw,26px);text-align:center}
+#panel h2{font-size:clamp(21px,3.4vw,30px);margin:3px 0 10px;color:#442765}#panel h3{margin:7px 0;color:#563270;font-size:18px}
+#panel p{line-height:1.5;margin:9px auto;max-width:610px}#panel .lead{font-size:clamp(14px,2vw,17px)}
+#panel .eyebrow{color:#735c9e;font-size:11px;letter-spacing:.12em;font-weight:900;text-transform:uppercase}
+button{font:inherit;cursor:pointer;font-weight:850;color:#322650;background:linear-gradient(#fef3c9,#eacb8e);border:2px solid #a98256;border-radius:12px;padding:10px 14px}
+button:focus-visible,button:hover{outline:3px solid #74d6b5;outline-offset:2px}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:linear-gradient(135deg,#8551bb,#4e399b);color:#fff;border:2px solid #cdb4ff}
+button.secondary{background:#ece8f7;color:#493870;border-color:#a8a0c6}
+.row-buttons{display:flex;gap:9px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px auto}
+.hero-grid button{min-width:0;background:#f4edff;border-color:#b6a3d9}
+.hero-grid .selected{background:#d9f9e8;border-color:#30997b}
+.hero-grid .avatar{display:block;font-size:clamp(28px,5vw,48px)}
+.world-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:14px 0;text-align:left}
+.world-grid button{background:#f4f0fd;border:2px solid #baa5d7;display:flex;gap:11px;text-align:left;align-items:center;font-size:14px;min-height:74px;padding:10px}
+.world-grid .world-emoji{font-size:28px}.world-grid b{display:block;color:#503577}.world-grid small{display:block;color:#665e7c;font-weight:500;line-height:1.4}
+.answers{display:grid;gap:9px;margin:14px auto;max-width:610px}
+.answers button{text-align:left;background:#f8f3ff;border-color:#a89bc7;padding:12px}
+.answers button:nth-child(even){background:#f5fbfc}
+.lesson-tag{display:inline-block;border-radius:99px;background:#e2dcfa;padding:4px 12px;font-weight:850;font-size:12px;color:#563c87}
+.orb-zone{padding:14px 0;min-height:150px;display:grid;place-items:center}
+.breath-orb{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 32% 31%,#fffedc,#9fe7e0 34%,#8267ef 77%,#5d4caa);box-shadow:0 0 18px #bcb2ff,0 0 45px #ab7cfd99,inset 0 0 24px #fff8;animation:breathe 8s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(.72);box-shadow:0 0 12px #bdb4ff,0 0 25px #ab7cfd66}50%{transform:scale(1.2);box-shadow:0 0 26px #fff6c5,0 0 60px #ab7cfd}}
+.breath-help{font-weight:800;color:#573e91}
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:14px}
+.activity-grid button{background:#f1f0ff;border-color:#aaa0da}
+.activity-grid button.selected{background:#d1f8e4;border-color:#338e76}
+.smallnote{font-size:12px;color:#77718d}
+.portal{height:105px;width:170px;border-radius:52% 52% 20% 20%;margin:16px auto;background:radial-gradient(#fffed4 3%,#a0edff 23%,#8670e9 54%,#352e72 80%);border:8px solid #b9a6eb;box-shadow:0 0 28px #9987e9;animation:portal 2.6s ease-in-out infinite alternate}
+@keyframes portal{from{filter:hue-rotate(0deg);transform:scale(.96)}to{filter:hue-rotate(24deg);transform:scale(1.05)}}
+#touchbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0;touch-action:none}
+#touchbar .group{display:flex;gap:7px}
+#touchbar button{background:#c5c8ff;border-color:#665ba2;color:#29204e;width:clamp(45px,10vw,66px);height:52px;padding:6px;font-size:23px;touch-action:none;user-select:none}
+#toolbar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+#toolbar button{font-size:13px;padding:8px 13px;background:#e4d6ff;border-color:#9a89c9}
+#toolbar #help{background:#d6fff0;border-color:#5eaf94}
+#hint{text-align:center;color:#d5d0ed;font-size:12px;line-height:1.5;padding:6px}
+footer{text-align:center;color:#aeb5d7;font-size:12px;padding:8px 15px 25px}
+@media(max-width:540px){#frame{border-width:3px}#panel{border-width:3px}.hero-grid{grid-template-columns:repeat(2,1fr)}.world-grid{grid-template-columns:1fr}.world-grid button{min-height:62px}.activity-grid{grid-template-columns:repeat(2,1fr)}#touchbar button{height:49px}#panel p{font-size:14px}#meterbox{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.breath-orb,.portal{animation:none}.breath-orb{transform:scale(.95)}}
+</style>
+</head>
+<body>
+<header><div class="eyebrow">MISSION WELL GAMES · TAN HEALTHCARE</div><h1>✨ MIND MATTERS ✨</h1><p>The Six Realms · A fantasy adventure about feelings, friendships and coping skills</p></header>
+<main>
+<div id="worldinfo"><div><strong id="worldtitle">🌲 Worry Woods</strong><br><small id="worldnumber">World 1 of 6</small></div>
+<div id="meterbox"><span>✨ Calm Meter*</span><div id="meter" role="progressbar" aria-label="Game calm meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100"><div id="meterfill"></div></div><strong id="metertext">100%</strong></div></div>
+<div id="frame"><canvas id="game" width="960" height="520" aria-label="Side-scrolling fantasy adventure world. Use the keyboard arrow keys or the on-screen direction arrows to explore."></canvas>
+<div id="hud"><span id="questhud">Challenges 0/7</span><span id="toolshud">Skills 0</span><span id="statushud">Explore the glowing path ✨</span></div>
+<div id="overlay"><div id="panel" role="dialog" aria-live="polite" aria-label="Adventure instructions"></div></div></div>
+<div id="touchbar"><div class="group"><button data-move="ArrowLeft" aria-label="Move left">◀</button><button data-move="ArrowRight" aria-label="Move right">▶</button></div><div class="group"><button data-move="ArrowDown" aria-label="Duck or move menu selection">▼</button><button data-move="ArrowUp" aria-label="Jump or confirm selection">▲</button></div></div>
+<div id="toolbar"><button id="help">🧙 Get Help</button><button id="talk">✨ Talk to Wizard</button><button id="map">🗺️ World Map</button><button id="pause">⏸ Pause</button><button id="retry">↺ Restart World</button></div>
+<div id="hint">← → Move · ↑ Jump · ↓ Duck · E Talk to Wizard · Enter or ↑ choose in dialogues · On-screen arrows for touch. Approach glowing gates to discover coping skills.</div>
+</main><footer>*The Calm Meter is a fictional game mechanic, not a measurement of anyone's mental health. There are no scores, ads, accounts or personal information collected. Asking for help is always a strength.</footer>
+<script>
+'use strict';
+const WORLDS=[
+{n:'Worry Woods',emoji:'🌲',desc:'When worries feel bigger than the forest',skill:'Calm Breeze',colors:['#1b224d','#504e91','#151e45','#7767ae','#b4b5fb'],scenery:'woods',
+quests:[
+{t:'breath',name:'The Glowing Grove',s:'The trees whisper so many worries at once. A little calm can help you decide what to do next.',skill:'Calm Breeze',tip:'Slower breathing is one way to help your body settle. If deep breaths feel uncomfortable, just breathe gently at your own pace.'},
+{t:'choose',name:'The Tangle of What-Ifs',s:'You keep thinking, “What if I make a mistake at school?” What might help?',o:['Everyone will think I am terrible.','Mistakes happen. I can try, learn and ask for help.','I should never try something new.'],good:1,why:'A realistic, kinder thought can help you take the next step.',skill:'Helpful Thoughts'},
+{t:'ground',name:'The Foggy Five-Senses Path',s:'Your thoughts are racing. Notice your surroundings to feel more connected to the present.',skill:'Grounding Stones',tip:'You can notice or imagine gentle sensations. You do not have to smell or taste anything.'},
+{t:'choose',name:'The Rustling Rumors',s:'Someone says a classmate is laughing about you, but you do not know if it is true. What could you do?',o:['Decide immediately that everyone dislikes me.','Pause, check what you know, and talk to someone you trust.','Spread a rumor back.'],good:1,why:'Checking facts can keep a scary guess from becoming the whole story.',skill:'Reality Check'},
+{t:'steps',name:'The Mountain of Tiny Tasks',s:'You have a big project due, and your worry makes it hard to begin.',steps:['Name the first small task','Give yourself a reasonable starting point','Take a break or ask for help if needed'],skill:'Stepping Stones',tip:'Big tasks often feel more possible when we break them down.'},
+{t:'choose',name:'The Thunder of Feelings',s:'You are upset and feel like shouting at someone. What could help first?',o:['Pause, name the feeling and give yourself a moment.','Pretend feelings are not allowed.','Say something hurtful right away.'],good:0,why:'Feelings are allowed. Pausing gives you more choices about what to do.',skill:'Name It to Tame It'},
+{t:'visualize',name:'The Safe Place Portal',s:'One last storm rolls in. Imagine a place or memory where you feel more settled.',skill:'Peaceful Portal',tip:'A peaceful image can be a useful way to pause before the next challenge.'}
+]},
+{n:'Homework Hills',emoji:'📚',desc:'When schoolwork feels too big to climb',skill:'Stepping Stones',colors:['#375c82','#8ac5cc','#485e86','#7abf9b','#e5fff2'],scenery:'hills',
+quests:[
+{t:'steps',name:'The Giant Assignment',s:'Three assignments seem to fill the whole horizon.',steps:['Write down what needs doing','Choose one manageable first step','Work for a short stretch, then check in'],skill:'Stepping Stones',tip:'Starting small still counts as starting.'},
+{t:'choose',name:'The Deadline Dragon',s:'You forgot an assignment and now feel embarrassed. What could help?',o:['Hide forever and hope nobody notices.','Ask the teacher what your options are and make a plan.','Decide you are bad at every subject.'],good:1,why:'A mistake does not define your abilities; asking about options can help.',skill:'Make a Plan'},
+{t:'breath',name:'The Rushing Clock',s:'The clock feels loud. Take a moment to settle before deciding what matters most.',skill:'Calm Breeze',tip:'A brief pause may make the next step easier to notice.'},
+{t:'choose',name:'The Comparison Cliffs',s:'Someone finished their work faster than you. What is a helpful way to think about it?',o:['Everyone learns at exactly the same speed.','My pace and learning needs can be different from theirs.','I should give up.'],good:1,why:'Learning is not a race. Different supports and approaches work for different people.',skill:'Perspective Lantern'},
+{t:'ground',name:'The Quiet Study Meadow',s:'Your mind keeps jumping ahead. Practice noticing the present before you continue.',skill:'Grounding Stones',tip:'You can return to one task at a time.'}
+]},
+{n:'Whispering Bridge',emoji:'🌉',desc:'Choices, peer pressure and finding your voice',skill:'Courage Shield',colors:['#162d50','#718ac4','#272b66','#877fe0','#e6dcff'],scenery:'bridge',
+quests:[
+{t:'choose',name:'The Dare at the Crossing',s:'Friends pressure you to do something risky that makes you uncomfortable. What could you say?',o:['“No thanks. I am not doing that.”','“Okay, I guess I have no choice.”','“I will do it so nobody laughs.”'],good:0,why:'You can say no without giving a long explanation.',skill:'Courage Shield'},
+{t:'choose',name:'The Secret Password',s:'A friend demands the password to your account to prove you trust them. What is a good boundary?',o:['Share it to avoid an argument.','Say your password is private and keep it to yourself.','Post their password online.'],good:1,why:'Privacy is a healthy boundary, even with people you care about.',skill:'Privacy Compass'},
+{t:'visualize',name:'The Brave Choice Portal',s:'Picture yourself choosing what feels safe, even if someone else disagrees.',skill:'Peaceful Portal',tip:'Rehearsing a kind, firm response can make it feel more familiar.'},
+{t:'choose',name:'The Crowd of Echoes',s:'Everyone in a group chat is teasing somebody. What could help?',o:['Join in so nobody targets you.','Choose not to participate and seek support if someone is being hurt.','Forward the messages to more people.'],good:1,why:'You can step away from hurtful group behavior and ask for help.',skill:'Kind Choice'},
+{t:'steps',name:'The Way Back Bridge',s:'A friend keeps ignoring your boundary. Find a way across without giving up your voice.',steps:['State your boundary clearly','Give yourself space if it is not respected','Reach out for help if the pressure continues'],skill:'Boundary Steps',tip:'You deserve friendships where your boundaries are respected.'}
+]},
+{n:'Echoing Clearing',emoji:'🔮',desc:'Rumors, unkind words and the stories we tell ourselves',skill:'Perspective Lantern',colors:['#20224e','#8161a9','#363168','#8d76c5','#ffd8fd'],scenery:'crystals',
+quests:[
+{t:'choose',name:'The Echo of One Comment',s:'Someone makes one unkind remark. Your mind says, “Everybody hates me.” What is more accurate?',o:['One comment does not tell me what everyone thinks.','That comment proves nobody likes me.','I am never going to speak again.'],good:0,why:'One unkind moment is not the whole picture.',skill:'Helpful Thoughts'},
+{t:'ground',name:'The Shifting Mirror',s:'The echoes are distracting. Notice what is around you instead of chasing every thought.',skill:'Grounding Stones',tip:'Grounding can help bring attention back to the moment.'},
+{t:'choose',name:'The Screenshot Shadow',s:'A hurtful screenshot about you is spreading. What might be a safer response?',o:['Post a mean screenshot about someone else.','Save evidence if safe, block or report, and tell a trusted adult.','Keep reading every message alone all night.'],good:1,why:'You deserve support. You do not have to handle online bullying alone.',skill:'Reach Out'},
+{t:'breath',name:'The Loudest Echo',s:'Your body feels tense after a difficult conversation. Take a gentle breathing pause.',skill:'Calm Breeze',tip:'A calmer moment does not solve everything, but it can help you choose what comes next.'},
+{t:'choose',name:'The Lantern of Truth',s:'A difficult moment keeps replaying in your head. Which thought might help?',o:['I must be perfect for everyone.','I can learn from what happened without judging my whole self.','Everything that goes wrong is always my fault.'],good:1,why:'Being kind to yourself can coexist with learning and taking responsibility.',skill:'Perspective Lantern'}
+]},
+{n:'Friendship Fork',emoji:'🌸',desc:'Belonging, communication and boundaries',skill:'Connection Compass',colors:['#314c72','#b39cbb','#495a80','#85bba5','#ffe5d3'],scenery:'fork',
+quests:[
+{t:'choose',name:'The Empty Seat',s:'Two friends make plans without inviting you. What might help?',o:['Ask about it calmly instead of assuming why.','Decide they will never care about you again.','Start a rumor about them.'],good:0,why:'It is okay to feel hurt and still ask questions before deciding what happened.',skill:'Speak Honestly'},
+{t:'steps',name:'The Knot of Misunderstanding',s:'You and a friend disagree. Untangle the conversation one step at a time.',steps:['Explain how you felt without blaming','Listen to what your friend says','Discuss what each of you needs next'],skill:'Conversation Steps',tip:'A respectful conversation leaves room for both people.'},
+{t:'choose',name:'The Boundary Gate',s:'Someone repeatedly jokes about something you asked them to stop. What could you do?',o:['Pretend you are fine forever.','Say clearly that you want it to stop and seek support if it continues.','Make a cruel joke back.'],good:1,why:'Your feelings and limits matter, even when someone says it is “just a joke.”',skill:'Courage Shield'},
+{t:'visualize',name:'The Belonging Garden',s:'Imagine a friendship where you can relax, be yourself, and feel respected.',skill:'Peaceful Portal',tip:'Healthy friendships make room for kindness, differences and boundaries.'},
+{t:'choose',name:'The Helping Hand',s:'A friend tells you they are struggling and asks you to keep a dangerous secret. What is caring?',o:['Promise never to tell an adult, no matter what.','Tell a trusted adult who can help keep your friend safe.','Pretend you never heard it.'],good:1,why:'Getting help for someone who may be unsafe is an act of caring.',skill:'Connection Compass'}
+]},
+{n:'Stormy Stage',emoji:'⛈️',desc:'Nerves, courage and showing up as yourself',skill:'Courage Compass',colors:['#172950','#5878ac','#353b7c','#8c7bc0','#fff1c6'],scenery:'stage',
+quests:[
+{t:'breath',name:'The Spotlight Begins',s:'You are about to speak in front of others, and your heart is racing.',skill:'Calm Breeze',tip:'You can be nervous and still take part. Breathe gently in a comfortable way.'},
+{t:'steps',name:'The First Three Lines',s:'The whole presentation feels enormous. Make a tiny rehearsal plan.',steps:['Look at your opening sentence','Practice one short section','Try the next part when ready'],skill:'Stepping Stones',tip:'Practice can build familiarity, one piece at a time.'},
+{t:'choose',name:'The Audience of What-Ifs',s:'What if somebody notices you are nervous? Choose a helpful thought.',o:['That would mean I failed.','People can feel nervous and still do a good job.','I should never try public speaking.'],good:1,why:'Nervousness is human. It does not decide your worth or your ability.',skill:'Perspective Lantern'},
+{t:'visualize',name:'The Rehearsal Portal',s:'Imagine stepping onto the stage, finding your place, and beginning with one sentence.',skill:'Peaceful Portal',tip:'A mental rehearsal can help you prepare for a new experience.'},
+{t:'choose',name:'The Final Curtain',s:'You stumble over a word during your presentation. What can you do?',o:['Take a breath and continue when you are ready.','Stop forever because one word went wrong.','Assume the whole audience is judging you.'],good:0,why:'A stumble is just a moment, not the whole performance. You made it to the final curtain!',skill:'Courage Compass'}
+]}
+];
+const HEROES=[{n:'Ari',emoji:'👧🏿',skin:'#70432b',hair:'#25151f',shirt:'#fd96b0',style:0},{n:'Mia',emoji:'👧🏼',skin:'#efc19f',hair:'#6f3e35',shirt:'#ac9cf9',style:1},{n:'Jay',emoji:'👦🏿',skin:'#70432b',hair:'#231620',shirt:'#5ce0c6',style:2},{n:'Leo',emoji:'👦🏼',skin:'#efc19f',hair:'#5a3426',shirt:'#7cb9ff',style:2}];
+const canvas=document.getElementById('game'),ctx=canvas.getContext('2d'),overlay=document.getElementById('overlay'),panel=document.getElementById('panel');
+const W=960,H=520,FLOOR=423,WORLD=4300,buttonKeys={ArrowLeft:false,ArrowRight:false,ArrowUp:false,ArrowDown:false};
+const GATE_X7=[460,910,1360,1970,2440,2890,3440],GATE_X5=[540,1180,1890,2700,3440],WIZARDS=[1620,3180];
+let hero=0,world=0,levelStarted=false,mode='hero',paused=true,cam=0,player={x:70,y:FLOOR-54,w:31,h:54,vy:0,ground:true,duck:false};
+let heart=100,completed=[],collected=new Set(),frame=0,challengeIndex=0,activityChecks=new Set(),activityStep=0,animationLatch=false,hurtCooldown=0,obstacles=[],platforms=[],activeWorld=-1;
+let menuItems=[],menuIndex=0,restoreAfterDialog=false,orbTextTimer=0;
+function escapeHtml(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function gatePositions(){return WORLDS[world].quests.length===7?GATE_X7:GATE_X5}
+function clearKeys(){for(const k of Object.keys(buttonKeys))buttonKeys[k]=false;animationLatch=false}
+function hud(){
+let count=completed.filter(Boolean).length,max=WORLDS[world].quests.length;
+document.getElementById('worldtitle').textContent=WORLDS[world].emoji+' '+WORLDS[world].n;
+document.getElementById('worldnumber').textContent='World '+(world+1)+' of 6 · '+WORLDS[world].desc;
+document.getElementById('questhud').textContent='Challenges '+count+'/'+max;
+document.getElementById('toolshud').textContent='Skills '+collected.size;
+document.getElementById('metertext').textContent=heart+'%';
+document.getElementById('meterfill').style.width=heart+'%';
+document.getElementById('meter').setAttribute('aria-valuenow',String(heart));
+}
+function changeHeart(d){heart=Math.min(100,Math.max(25,heart+d));hud()}
+function setPanel(html,nextMode){
+mode=nextMode;paused=true;clearKeys();overlay.hidden=false;panel.innerHTML=html;
+menuItems=Array.from(panel.querySelectorAll('button:not(:disabled)'));menuIndex=0;
+if(menuItems.length){menuItems[0].focus({preventScroll:true})}
+}
+function resume(){overlay.hidden=true;mode='play';paused=false;clearKeys()}
+function chooseHero(){
+let s='<div class="eyebrow">Your adventure begins</div><h2>🧠 Mind Matters: The Six Realms</h2><p class="lead">Explore six magical worlds. Practice coping skills, help the landscape change, and find the Wizard of the Woods whenever you need support.</p><h3>Choose your hero</h3><div class="hero-grid">';
+HEROES.forEach((h,i)=>{s+='<button data-action="hero" data-i="'+i+'" class="'+(hero===i?'selected':'')+'"><span class="avatar">'+h.emoji+'</span>'+h.n+'</button>'});
+s+='</div><div class="row-buttons"><button class="primary" data-action="map">🗺️ Choose a World</button></div>';
+setPanel(s,'hero')
+}
+function worldMap(){
+let s='<div class="eyebrow">Choose anywhere to playtest</div><h2>🗺️ Map of the Six Realms</h2><p>All six worlds are unlocked. Pick one, or play them in order.</p><div class="world-grid">';
+WORLDS.forEach((v,i)=>{s+='<button data-action="world" data-i="'+i+'"><span class="world-emoji">'+v.emoji+'</span><span><b>World '+(i+1)+': '+v.n+'</b><small>'+v.desc+' · '+v.quests.length+' challenges</small></span></button>'});
+s+='</div><button class="secondary" data-action="heroes">Change Hero</button>';
+setPanel(s,'map')
+}
+function loadWorld(n){
+world=n;activeWorld=n;completed=WORLDS[n].quests.map(()=>false);collected=new Set();heart=100;cam=0;frame=0;hurtCooldown=0;
+player={x:70,y:FLOOR-54,w:31,h:54,vy:0,ground:true,duck:false};
+obstacles=[{x:700,w:54,kind:'root'},{x:1495,w:76,kind:'stone'},{x:2290,w:56,kind:'root'},{x:2990,w:68,kind:'stone'}];
+platforms=[{x:950,y:FLOOR-75,w:185,h:15},{x:1660,y:FLOOR-91,w:210,h:16},{x:2510,y:FLOOR-74,w:160,h:15},{x:3620,y:FLOOR-98,w:240,h:16}];
+hud();
+let v=WORLDS[n];
+setPanel('<div class="eyebrow">World '+(n+1)+' of 6</div><h2>'+v.emoji+' '+v.n+'</h2><p class="lead">'+v.desc+'.</p><p>Walk toward the glowing challenge gates. Try activities, earn coping tools, and watch obstacles transform. The Wizard appears halfway through and near the end, and you can use <b>Get Help</b> at any time.</p><p>Jump over roots and rocks. Bumps only lower your <em>game</em> Calm Meter a little. You can always recover.</p><button class="primary" data-action="resume">Start Exploring ✨</button>','intro')
+}
+function challengeAt(i){
+if(completed[i])return;challengeIndex=i;activityChecks.clear();activityStep=0;
+renderChallenge()
+}
+function quest(){return WORLDS[world].quests[challengeIndex]}
+function renderChallenge(note){
+let q=quest(),s='<div class="eyebrow">'+WORLDS[world].emoji+' '+WORLDS[world].n+' · Challenge '+(challengeIndex+1)+'</div><h2>✨ '+q.name+'</h2><p class="lead">'+q.s+'</p>';
+if(q.t==='choose'){
+s+='<span class="lesson-tag">Choose a helpful path</span><div class="answers">';
+q.o.forEach((a,i)=>s+='<button data-action="answer" data-i="'+i+'">'+escapeHtml(a)+'</button>');
+s+='</div>';
+}else if(q.t==='breath'){
+s+='<span class="lesson-tag">Calm Breeze</span><div class="orb-zone"><div class="breath-orb" aria-label="The glowing forest light grows and shrinks slowly"></div></div><p class="breath-help">🌟 Breathe in gently as the light grows.<br>Breathe out gently as it shrinks.</p><p>You can try a couple of comfortable breaths. You do not need to hold your breath or match the light perfectly.</p><button class="primary" data-action="practice">I Practiced My Breathing ✓</button>';
+}else if(q.t==='ground'){
+let senses=[['👀','See: notice something you can see'],['✋','Touch: notice a texture or sensation'],['👂','Hear: notice a sound'],['🌼','Smell: recall or notice a gentle scent'],['🍓','Taste: recall or notice a familiar taste']];
+s+='<span class="lesson-tag">Five Senses · Grounding Stones</span><p>Pick each stone after noticing or imagining that sense. There is no need to find an actual smell or taste.</p><div class="activity-grid">';
+senses.forEach((v,i)=>s+='<button class="'+(activityChecks.has(i)?'selected':'')+'" data-action="sense" data-i="'+i+'">'+v[0]+' '+v[1]+(activityChecks.has(i)?' ✓':'')+'</button>');
+s+='</div><p class="smallnote">'+activityChecks.size+'/5 grounding stones lit</p><button class="primary" data-action="practice" '+(activityChecks.size!==5?'disabled':'')+'>Finish Grounding ✓</button>';
+}else if(q.t==='steps'){
+s+='<span class="lesson-tag">Stepping Stones</span><p>Turn a big problem into smaller, possible actions. Follow the stepping stones.</p><div class="answers">';
+q.steps.forEach((v,i)=>s+='<button data-action="step" data-i="'+i+'" '+(i!==activityStep?'disabled':'')+'>'+(i<activityStep?'✓':(i===activityStep?'➜':'○'))+' Step '+(i+1)+': '+v+'</button>');
+s+='</div>';
+if(activityStep>=q.steps.length)s+='<button class="primary" data-action="practice">My Plan Is Ready ✓</button>';
+}else if(q.t==='visualize'){
+s+='<span class="lesson-tag">Peaceful Portal · Visualization</span><div class="portal" role="img" aria-label="An animated glowing imaginary portal"></div><p>Choose a safe or comfortable place to picture in your mind. It can be real or imagined.</p><div class="answers">';
+['🌅 A sunny beach','🌲 A quiet forest','🛋️ A cozy, familiar room'].forEach((v,i)=>s+='<button data-action="imagine" data-i="'+i+'">'+v+'</button>');
+s+='</div>';
+}
+if(note)s+='<p class="smallnote">'+note+'</p>';
+s+='<div class="row-buttons"><button class="secondary" data-action="help">🧙 Ask the Wizard</button></div>';
+setPanel(s,'challenge')
+}
+function feedback(html,success){
+let q=quest();
+if(success){
+completed[challengeIndex]=true;collected.add(q.skill);changeHeart(8);
+setPanel('<div class="eyebrow">Skill practiced · Gate cleared</div><h2>🌟 '+q.skill+' Earned!</h2><p class="lead">'+html+'</p><p>'+(q.tip||'Practicing a helpful response builds options for the next challenge.')+'</p><p>✨ The magical barrier fades and your path opens!</p><button class="primary" data-action="resume">Continue Adventure ▶</button>','success')
+}else{
+changeHeart(-3);
+setPanel('<h2>💜 Another Way to Think</h2><p class="lead">'+html+'</p><p>You can always try again. Learning takes practice.</p><button class="primary" data-action="retryChallenge">Try Another Choice</button> <button class="secondary" data-action="help">Ask the Wizard</button>','feedback')
+}
+}
+function answer(i){let q=quest();if(i===q.good)feedback(q.why,true);else feedback('That response might make things harder. '+q.why,false)}
+function step(i){const q=quest();if(i!==activityStep)return;activityStep++;renderChallenge()}
+function practice(){let q=quest();if(q.t==='ground'&&activityChecks.size!==5)return;
+if(q.t==='steps'&&activityStep<q.steps.length)return;
+feedback(q.tip||'You practiced a useful coping skill.',true)}
+function visualize(i){let names=['the sunny beach','the quiet forest','the cozy room'];feedback('Picture '+names[i]+'. What can you see or hear there? You can take that image with you as you continue.',true)}
+function wizard(isNearby){
+const msg=isNearby?'You found me here on the trail!':'You called, and here I am! You can ask for help at any point in this adventure.';
+setPanel('<div class="eyebrow">Wizard of the Woods · Rest Stop</div><h2>🧙‍♂️ Hello, Adventurer!</h2><p class="lead">'+msg+'</p><p>Everyone needs support sometimes. We can rest, breathe, or talk through a problem. Reaching out is a strength.</p><p><b>Your game Calm Meter can refill to 100%.</b> It is a game mechanic, not a measure of your real feelings.</p><div class="row-buttons"><button class="primary" data-action="refill">✨ Restore My Calm Meter</button><button class="secondary" data-action="wizardReturn">Return to Adventure</button></div>','wizard')
+}
+function wizardRefill(){heart=100;hud();setPanel('<h2>🌟 Magic Restored!</h2><p>Your game Calm Meter is full. You can come back whenever you like.</p><p>In real life, a trusted adult, friend, counselor or another helper can support you too.</p><button class="primary" data-action="wizardReturn">Back to My Quest ▶</button>','wizardDone')}
+function worldFinish(){
+let last=world===WORLDS.length-1;
+let body='<div class="eyebrow">'+(last?'All six realms explored':'World '+(world+1)+' complete')+'</div><h2>🏆 '+(last?'You Finished the Six Realms!':WORLDS[world].emoji+' '+WORLDS[world].n+' Complete!')+'</h2><p class="lead">You practiced '+completed.filter(Boolean).length+' challenges and discovered '+collected.size+' coping tools in this world.</p><p>There is no single perfect response to every feeling. Trying skills and asking for support can help you find what works for you.</p>';
+body+='<div class="row-buttons"><button class="primary" data-action="'+(last?'replay':'nextworld')+'">'+(last?'Replay From World 1':'Next World ▶')+'</button><button class="secondary" data-action="map">Choose a World</button></div>';
+setPanel(body,'finish')
+}
+function makeSparkles(x,y,n,col){for(let i=0;i<n;i++){let a=i*2*Math.PI/n,r=12+(i%3)*11;ctx.fillStyle=col;ctx.beginPath();ctx.arc(x+Math.cos(a+frame*.007)*r,y+Math.sin(a+frame*.007)*r,2+(i%2),0,Math.PI*2);ctx.fill()}}
+function nearestWizard(){return WIZARDS.some(x=>Math.abs(player.x-x)<125)}
+function update(){
+if(paused||mode!=='play')return;
+if(hurtCooldown>0)hurtCooldown--;
+let dir=(buttonKeys.ArrowRight?1:0)-(buttonKeys.ArrowLeft?1:0),speed=buttonKeys.ArrowDown?2.3:4.8;
+if(buttonKeys.ArrowDown&&!player.duck){player.y+=23;player.h=31;player.duck=true}
+if(!buttonKeys.ArrowDown&&player.duck){player.y-=23;player.h=54;player.duck=false}
+player.x=Math.max(30,Math.min(WORLD-80,player.x+dir*speed));
+if(!buttonKeys.ArrowUp)animationLatch=false;
+if(buttonKeys.ArrowUp&&player.ground&&!animationLatch){player.vy=-12.5;player.ground=false;animationLatch=true}
+let oldBottom=player.y+player.h;
+player.vy=Math.min(12,player.vy+.6);player.y+=player.vy;
+player.ground=false;
+if(player.y+player.h>=FLOOR){player.y=FLOOR-player.h;player.vy=0;player.ground=true}
+for(const p of platforms)if(player.x+player.w>p.x&&player.x<p.x+p.w&&player.vy>=0&&oldBottom<=p.y+7&&player.y+player.h>=p.y){
+player.y=p.y-player.h;player.vy=0;player.ground=true;
+}
+for(const o of obstacles)if(hurtCooldown===0&&player.x+player.w>o.x&&player.x<o.x+o.w&&player.y+player.h>FLOOR-38){
+hurtCooldown=85;changeHeart(-7);player.x=Math.max(30,player.x-45);
+document.getElementById('statushud').textContent='A small bump. Keep trying!';break}
+for(const [i,x] of gatePositions().entries())if(!completed[i]&&player.x+player.w>=x-18){player.x=Math.min(player.x,x-45);challengeAt(i);return}
+if(player.x>WORLD-250){
+if(completed.every(Boolean))worldFinish();
+return}
+cam=Math.max(0,Math.min(WORLD-W,player.x-W*.33));
+let near=nearestWizard();document.getElementById('talk').disabled=!near;
+if(near)document.getElementById('statushud').textContent='🧙 Press E to talk';
+else if(frame%250===0)document.getElementById('statushud').textContent='Find the next glowing gate ✨'
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fill()}
+function drawBackground(){
+const v=WORLDS[world],co=v.colors;let gr=ctx.createLinearGradient(0,0,0,H);gr.addColorStop(0,co[0]);gr.addColorStop(.7,co[1]);gr.addColorStop(1,co[2]);ctx.fillStyle=gr;ctx.fillRect(0,0,W,H);
+ctx.fillStyle='#fff8dc';ctx.shadowBlur=24;ctx.shadowColor='#f7ecbd';ctx.beginPath();ctx.arc(775,86,29,0,7);ctx.fill();ctx.shadowBlur=0;
+for(let i=0;i<55;i++){const x=(i*173+Math.sin(i*27)*95-cam*.09)%(W+130),y=20+(i*79)%255;ctx.fillStyle=i%3===0?'#d6ffff9c':'#ffffff6b';ctx.fillRect(x<0?x+W+130:x,y,2,2)}
+for(let layer=0;layer<2;layer++){let off=layer===0?.17:.37;colorHills(off,layer?co[3]:co[2],layer?360:320,layer?58:84)}
+if(v.scenery==='woods')drawTrees(.46,'#24234f',25); 
+if(v.scenery==='hills')drawHillsScene();
+if(v.scenery==='bridge')drawBridgeScene();
+if(v.scenery==='crystals')drawCrystalScene();
+if(v.scenery==='fork')drawFlowerScene();
+if(v.scenery==='stage')drawStageScene()
+}
+function colorHills(rate,color,yBase,height){
+ctx.fillStyle=color;ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(0,H);
+for(let x=-30;x<=W+35;x+=10){let xx=x+cam*rate;ctx.lineTo(x,yBase-Math.sin(xx/170)*height-Math.sin(xx/81)*height*.38)}
+ctx.lineTo(W,H);ctx.closePath();ctx.fill();ctx.globalAlpha=1
+}
+function drawTrees(rate,color,count){
+let shift=cam*rate;
+for(let i=-1;i<count;i++){let x=i*134-shift%134;
+ctx.fillStyle=color;ctx.fillRect(x+30,180+(i%3)*25,19,254);ctx.beginPath();ctx.ellipse(x+39,200+(i%3)*19,60,100,0,0,7);ctx.fill();
+ctx.fillStyle='#7864af';ctx.globalAlpha=.4;ctx.beginPath();ctx.ellipse(x+10,236,20,30,0,0,7);ctx.fill();ctx.globalAlpha=1
+}}
+function drawHillsScene(){for(let i=0;i<14;i++){let x=i*140-cam*.48%140,y=340+i%3*20;ctx.fillStyle='#d8b3eb8a';ctx.fillRect(x,y-45,42,54);ctx.fillStyle='#f6e3fb';ctx.fillRect(x+5,y-40,32,4);ctx.fillStyle='#94dec2';ctx.fillRect(x+47,y-23,30,30)}}
+function drawBridgeScene(){ctx.strokeStyle='#b7a3e8';ctx.lineWidth=4;for(let i=-1;i<15;i++){let x=i*150-cam*.43%150;ctx.beginPath();ctx.moveTo(x,360);ctx.quadraticCurveTo(x+75,320,x+150,360);ctx.stroke();ctx.strokeStyle='#b9b4e988';ctx.beginPath();ctx.moveTo(x,358);ctx.lineTo(x,395);ctx.stroke()}}
+function drawCrystalScene(){for(let i=0;i<17;i++){let x=i*120-cam*.42%120,y=360;ctx.fillStyle=i%2?'#d8a1ff6c':'#a8eafb73';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+28,y-114-i%3*18);ctx.lineTo(x+55,y);ctx.closePath();ctx.fill()}}
+function drawFlowerScene(){for(let i=0;i<42;i++){let x=i*57-cam*.46%57,y=365+(i%3)*14;ctx.fillStyle=i%3?'#ffc7e3':'#bdfadb';ctx.beginPath();ctx.arc(x,y,7,0,7);ctx.fill();ctx.fillStyle='#fff6be';ctx.beginPath();ctx.arc(x,y,3,0,7);ctx.fill()}}
+function drawStageScene(){ctx.fillStyle='#37356899';for(let i=0;i<8;i++){let x=i*157-cam*.42%157;ctx.beginPath();ctx.arc(x,290,48,0,7);ctx.fill();ctx.strokeStyle='#dceaffaa';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,355);ctx.lineTo(x-23,390);ctx.stroke()}}
+function drawWorld(){
+drawBackground();ctx.save();ctx.translate(-cam,0);
+const v=WORLDS[world];
+ctx.fillStyle=v.colors[3];ctx.fillRect(0,FLOOR,WORLD,H-FLOOR);
+let dirt=ctx.createLinearGradient(0,FLOOR,0,H);dirt.addColorStop(0,'#494673');dirt.addColorStop(1,'#1c1c3d');ctx.fillStyle=dirt;ctx.fillRect(0,FLOOR+18,WORLD,H-FLOOR-15);
+ctx.fillStyle=v.colors[4];for(let x=0;x<WORLD;x+=83){roundRect(x+9,FLOOR,48,5,3)}
+ctx.fillStyle='#d1c1e9';ctx.globalAlpha=.35;for(let i=0;i<95;i++)ctx.fillRect(i*47+(i%3)*11,FLOOR+33+(i%4)*12,6,2);ctx.globalAlpha=1;
+for(const p of platforms){ctx.fillStyle='#8a80b9';roundRect(p.x,p.y,p.w,p.h,8);ctx.fillStyle='#d8d0ef';roundRect(p.x+7,p.y,p.w-14,4,3)}
+for(const o of obstacles){let yy=FLOOR-37;ctx.fillStyle=o.kind==='stone'?'#b4a4c5':'#664c79';roundRect(o.x,yy,o.w,37,11);ctx.fillStyle='#e5cae999';roundRect(o.x+8,yy+6,o.w-16,6,3)}
+for(let i=0;i<60;i++){let x=i*73+20;ctx.fillStyle=i%2?'#c6faac':'#d9b3ed';ctx.fillRect(x,FLOOR-10,3,10);ctx.beginPath();ctx.arc(x+1,FLOOR-10,4,0,7);ctx.fill()}
+for(const [i,x] of gatePositions().entries()){
+let isDone=completed[i];ctx.save();
+if(!isDone){ctx.fillStyle='#c09aff66';ctx.shadowColor='#d4a2ff';ctx.shadowBlur=26;roundRect(x-15,FLOOR-124,25,124,12);ctx.shadowBlur=0;ctx.fillStyle='#e3d4ff';ctx.font='bold 15px system-ui';ctx.fillText('✦ '+(i+1),x-15,FLOOR-148);makeSparkles(x,FLOOR-155,6,'#d8c0ff')}else{ctx.globalAlpha=.72;ctx.fillStyle='#7dfac2';ctx.font='27px system-ui';ctx.fillText('✓',x-5,FLOOR-115);makeSparkles(x,FLOOR-115,5,'#80fac0')}
+ctx.restore()}
+for(const wx of WIZARDS){ctx.save();ctx.translate(wx,FLOOR-58);ctx.fillStyle='#62419d';ctx.beginPath();ctx.moveTo(-20,57);ctx.lineTo(0,-11);ctx.lineTo(21,57);ctx.closePath();ctx.fill();ctx.fillStyle='#ffe9c9';ctx.beginPath();ctx.arc(0,2,15,0,7);ctx.fill();ctx.fillStyle='#7a55c7';ctx.beginPath();ctx.moveTo(-21,-9);ctx.lineTo(0,-60);ctx.lineTo(22,-9);ctx.closePath();ctx.fill();ctx.fillStyle='#f4e29b';ctx.font='27px system-ui';ctx.fillText('✦',4,-32);ctx.fillStyle='#f5e7ff';ctx.font='bold 14px system-ui';ctx.fillText('WIZARD',-32,-72);makeSparkles(0,-28,5,'#e6caee');ctx.restore()}
+ctx.fillStyle='#ecf2ff';roundRect(WORLD-212,FLOOR-130,175,101,16);ctx.fillStyle='#4a346f';ctx.font='bold 22px system-ui';ctx.fillText('✦ PORTAL',WORLD-192,FLOOR-88);ctx.font='bold 13px system-ui';ctx.fillText('Next Realm →',WORLD-188,FLOOR-65);
+drawHero();
+ctx.restore();
+ctx.fillStyle='#e6dcff';ctx.font='800 14px system-ui';ctx.fillText(v.emoji+' '+v.n,14,H-14);
+}
+function drawHero(){
+let h=HEROES[hero],x=player.x,y=player.y;
+ctx.fillStyle='#f1f8ff3b';ctx.beginPath();ctx.ellipse(x+17,FLOOR-1,24,6,0,0,7);ctx.fill();
+if(hurtCooldown>0&&frame%8<4)return;
+ctx.fillStyle=h.skin;roundRect(x+6,y+5,22,22,7);
+ctx.fillStyle=h.hair;roundRect(x+5,y+1,24,10,5);
+if(h.style===0){ctx.beginPath();ctx.arc(x+2,y+7,7,0,7);ctx.arc(x+31,y+7,7,0,7);ctx.fill()}
+if(h.style===1)roundRect(x+26,y+4,11,30,5);
+ctx.fillStyle=h.shirt;roundRect(x+4,y+24,27,player.h-25,5);
+ctx.fillStyle='#282c5a';ctx.fillRect(x+4,y+player.h-9,11,9);ctx.fillRect(x+21,y+player.h-9,11,9);
+ctx.fillStyle='#2e2040';ctx.fillRect(x+23,y+15,3,3);
+}
+function loop(){requestAnimationFrame(loop);frame++;update();drawWorld()}
+panel.addEventListener('click',e=>{
+const b=e.target.closest('button');if(!b||b.disabled)return;
+const act=b.dataset.action,i=Number(b.dataset.i);
+if(act==='hero'){hero=i;chooseHero()}
+else if(act==='heroes')chooseHero();
+else if(act==='map')worldMap();
+else if(act==='world')loadWorld(i);
+else if(act==='resume')resume();
+else if(act==='answer')answer(i);
+else if(act==='sense'){activityChecks.add(i);renderChallenge()}
+else if(act==='step')step(i);
+else if(act==='practice')practice();
+else if(act==='imagine')visualize(i);
+else if(act==='retryChallenge')renderChallenge();
+else if(act==='help')wizard(false);
+else if(act==='wizardReturn'){if(activeWorld<0)chooseHero();else resume()}
+else if(act==='refill')wizardRefill();
+else if(act==='nextworld')loadWorld(Math.min(WORLDS.length-1,world+1));
+else if(act==='replay')loadWorld(0);
+});
+function menuControl(key){
+menuItems=Array.from(panel.querySelectorAll('button:not(:disabled)'));
+if(!menuItems.length)return;
+if(key==='ArrowLeft'||key==='ArrowDown'||key==='ArrowRight'){
+menuIndex=(menuIndex+(key==='ArrowLeft'?menuItems.length-1:1))%menuItems.length;
+menuItems[menuIndex].focus({preventScroll:true});return}
+if(key==='ArrowUp'||key==='Enter'||key===' '){
+if(document.activeElement&&menuItems.includes(document.activeElement))document.activeElement.click();
+else menuItems[Math.max(0,menuIndex)].click();
+}
+}
+document.addEventListener('keydown',e=>{
+if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' ','Enter'].includes(e.key))e.preventDefault();
+if(e.key==='Escape'&&!overlay.hidden&&activeWorld>=0){resume();return}
+if(e.key.toLowerCase()==='e'&&overlay.hidden){if(nearestWizard())wizard(true);else wizard(false);return}
+if(!overlay.hidden){if(!e.repeat)menuControl(e.key);return}
+if(Object.prototype.hasOwnProperty.call(buttonKeys,e.key))buttonKeys[e.key]=true;
+});
+document.addEventListener('keyup',e=>{if(Object.prototype.hasOwnProperty.call(buttonKeys,e.key))buttonKeys[e.key]=false});
+window.addEventListener('blur',clearKeys);
+for(const b of document.querySelectorAll('[data-move]')){
+let k=b.dataset.move;
+b.addEventListener('pointerdown',e=>{
+e.preventDefault();b.setPointerCapture(e.pointerId);
+if(!overlay.hidden){menuControl(k);return}
+buttonKeys[k]=true
+});
+for(const name of ['pointerup','pointercancel','lostpointercapture'])b.addEventListener(name,()=>{buttonKeys[k]=false})
+}
+document.getElementById('help').onclick=()=>wizard(false);
+document.getElementById('talk').onclick=()=>{if(nearestWizard())wizard(true)};
+document.getElementById('map').onclick=worldMap;
+document.getElementById('pause').onclick=()=>{
+if(mode==='play'){paused=!paused;document.getElementById('pause').textContent=paused?'▶ Resume':'⏸ Pause';clearKeys()}
+};
+document.getElementById('retry').onclick=()=>loadWorld(world);
+document.getElementById('talk').disabled=true;
+hud();chooseHero();requestAnimationFrame(loop);
+</script></body></html>
